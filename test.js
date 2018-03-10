@@ -1,19 +1,38 @@
 var express = require('express');
-var bodyp = require('body-parser');
+var bodyParser = require("body-parser");
 var app = express();
+var MongoClient = require('mongodb').MongoClient;
 
-app.use(bodyp.urlencoded({ extended : false}));
-
-
-app.get('/', function (req, res) {
-    res.sendFile(__dirname + '/index.html');
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(function (req, res, next) {
+    // Website you wish to allow to connect
+    res.setHeader('Access-Control-Allow-Origin', 'null');
+    // Request methods you wish to allow
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    // Request headers you wish to allow
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+    // Set to true if you need the website to include cookies in the requests sent
+    // to the API (e.g. in case you use sessions)
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    // Pass to next layer of middleware
+    next();
 });
 
-app.post('/submit-student-data', function (req, res) {
-    var name = req.body.firstName + ' ' + req.body.lastName;
-    
-    res.send(name + ' Submitted Successfully!');
-});
+MongoClient.connect("mongodb://localhost:27017",function(err, client){
+	db = client.db("farmer");
+	app.post('/submit-data', function (req, res) {
+    	console.log(req.body);
+
+    	db.collection("users",function(err, c){
+    		c.insert(req.body);
+		})
+
+    	res.end("yes");	
+	});
+	
+})
+
 
 
 
